@@ -429,18 +429,21 @@ run_info_t *run_s2(s2_t *s2) {
                 info->typ = INFO_BOOL;
                 info->data.b = INFO_FALSE;
             }
+            break;
         case LEX_PRED:
             info = run(s2->t);
             if (info->typ != INFO_NUM) {
                 return NULL;
             }
             info->data.n--;
+            break;
         case LEX_SUCC:
             info = run(s2->t);
             if (info->typ != INFO_NUM) {
                 return NULL;
             }
             info->data.n++;
+            break;
         default:
             return NULL;
     }
