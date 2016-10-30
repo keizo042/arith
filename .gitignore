@@ -1,0 +1,4 @@
+*.o
+./arith
+TAGS
+tags
