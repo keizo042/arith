@@ -249,6 +249,7 @@ int parse_s1(parser_state *state) {
             return DONE;
     }
     parser_push(state, data);
+    parser_state_next(state);
     return CONT;
 }
 
@@ -279,58 +280,70 @@ int parse_s2(parser_state *state) {
     return CONT;
 }
 int parse_s3(parser_state *state) {
-    ast_t *data = malloc(sizeof(ast_t)), *t = NULL;
+    ast_t *data = NULL, *t = NULL;
     int ret = CONT;
-    data->typ = AST_S3;
     if (state->stream->token->typ != LEX_IF) {
         state->err = 1;
         return DONE;
     }
     parser_state_next(state);
+
     ret = parse_start(state);
     if (ret == DONE) {
         state->err = 1;
         return DONE;
     }
+
     t = parser_pop(state);
     if (t == NULL) {
         state->err = 1;
         return DONE;
     }
+
+    data = malloc(sizeof(ast_t));
+    data->typ = AST_S3;
+    data->data.s3 = malloc(sizeof(s3_t));
     data->data.s3->p = t;
+
     if (state->stream->token->typ != LEX_THEN) {
         state->err = 1;
         return DONE;
     }
     parser_state_next(state);
+
     ret = parse_start(state);
     if (ret == DONE) {
         state->err = 1;
         return DONE;
     }
     t = parser_pop(state);
+
     if (t == NULL) {
         state->err = 1;
         return DONE;
     }
     data->data.s3->right = t;
+
     if (state->stream->token->typ != LEX_ELSE) {
         state->err = 1;
         return DONE;
     }
     parser_state_next(state);
+
     ret = parse_start(state);
     if (ret == DONE) {
         state->err = 1;
         return DONE;
     }
+
     t = parser_pop(state);
     if (t == NULL) {
         state->err = 1;
         return DONE;
     }
     data->data.s3->left = t;
-    return CONT;
+
+    return DONE;
 }
 
 int parse_start(parser_state *state) {
@@ -367,12 +380,13 @@ int parse_start(parser_state *state) {
             state->err = 1;
             return DONE;
     }
-    return CONT;
+    parser_state_next(state);
+    return DONE;
 }
 
 parser_state *parse(lex_state *lexer) {
     parser_state *state = malloc(sizeof(parser_state));
-    state->s = malloc(sizeof(parser_stack_t));
+    state->s = NULL;
     state->stream = lexer->head;
     parse_start(state);
     if (state == NULL) {
